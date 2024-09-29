@@ -18,6 +18,9 @@ from util import get_gpt_response, add_secs_to_datetime
 
 dp = Dispatcher()
 bot = None
+cash = {
+    "last_message_date": {}
+}
 answer = {
     'not_auth': 'Извините, сначала нужно зарегистрироваться!',
     'error': 'Что-то пошло не так...',
@@ -138,13 +141,13 @@ async def clean_context(message: Message) -> None:
 
             await message.answer(f'Все забыл, но решительно готов продолжить беседу!')
         else:
-            logging.debug(f'Пользователь с id {user_id} не найден!')
+            logging.info(f'Пользователь с id {user_id} не найден!')
 
-            await message.answer(answer['error'])
+            await message.answer(answer['not_auth'])
     except Exception as ex:
         logging.error(f'Ошибка при сбросе контекста пользователю {user_id}: {ex}')
 
-        await message.answer('Ошибка!')
+        await message.answer(answer['error'])
     finally:
         session.close()
 
@@ -166,18 +169,22 @@ async def handle_messages(message: Message) -> None | SendMessage:
         user = session.query(UserModel).filter_by(user_id=user_id).first()
 
         if user:
-            await message.answer('Думаю...')
-
             context = json.loads(user.context)
             current_token_usage = user.token_usage
             token_capacity = user.token_capacity
             context_length = user.context_length
             context_capacity = user.context_capacity
-            last_message_date = user.last_message_date
             token_usage = len(text) + current_token_usage
+            last_message_date = cash.get('last_message_date').get(user_id)
+            current_datetime = datetime.datetime.now()
 
-            if datetime.datetime.now() < add_secs_to_datetime(last_message_date, 1):
-                return message.answer(f'Отправка сообщений возможна не чаще чем раз в 1 сек!')
+            if last_message_date and current_datetime <= add_secs_to_datetime(last_message_date, 2):
+                return message.answer(f'Отправка сообщений возможна не чаще чем раз в 2 сек!')
+
+            cash.get('last_message_date')[user_id] = current_datetime
+
+            await message.answer('Думаю...')
+
             if token_usage > token_capacity:
                 logging.info(f'Закончились токены! Использовано {current_token_usage}, разрешено {token_capacity}')
 
@@ -229,7 +236,7 @@ async def handle_messages(message: Message) -> None | SendMessage:
         else:
             logging.debug(f'Пользователь {user_id} не найден в БД')
 
-            await message.answer(answer['not_auth'])
+            return message.answer(answer['not_auth'])
     except Exception as ex:
         logging.error(f'Ошибка при работе с GPT: {ex}')
 
@@ -243,8 +250,14 @@ async def main() -> None:
     Метод для запуска бота
     :return: None
     """
-    bot = Bot(token=API_TOKEN)
-    await dp.start_polling(bot)
+    global bot
+
+    try:
+        bot = Bot(token=API_TOKEN)
+
+        await dp.start_polling(bot)
+    except Exception as ex:
+        logging.error(f'Ошибка при старте polling! {ex}')
 
 
 if __name__ == '__main__':
