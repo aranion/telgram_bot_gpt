@@ -53,7 +53,7 @@ def process_search_openai(GOOGLE_API_KEY, GOOGLE_SEARCH_ENGINE_ID, question, pag
     context = [
         {'role': 'system', 'content': f'generate google search query in english for this question\n{question}'}
     ]
-    res = get_gpt_response(messages=context, max_tokens=20, temperature=0.9)
+    res = get_gpt_response(messages=context, max_tokens=20, temperature=0.3)
     query = res['msg'] if res['success'] else question
     search_res = get_search_result(GOOGLE_API_KEY, GOOGLE_SEARCH_ENGINE_ID, query, pages)
 
@@ -64,7 +64,7 @@ def process_search_openai(GOOGLE_API_KEY, GOOGLE_SEARCH_ENGINE_ID, question, pag
         {'role': 'system', 'content': search_res},
         {'role': 'system', 'content': 'Write a simple and useful answer.'}
     ]
-    res = get_gpt_response(messages=context, max_tokens=100, temperature=0.9)
+    res = get_gpt_response(messages=context, max_tokens=100, temperature=0.3)
     text_response = res['msg'] if res['success'] else search_res
 
     return text_response

@@ -23,7 +23,7 @@ class ResponseDict(TypedDict):
 def get_gpt_response(messages: Iterable[ChatCompletionMessageParam],
                      model: str = 'gpt-4o-mini-2024-07-18',
                      max_tokens: int = 1000,
-                     temperature: int = 0.7,
+                     temperature: float = 0.7,
                      n: int = 1,
                      *args,
                      **kwargs) -> ResponseDict:
