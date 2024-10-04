@@ -25,8 +25,7 @@ from util import get_gpt_response, add_secs_to_datetime
 dp = Dispatcher()
 bot = None
 cash = {
-    "last_message_date": {},
-    "is_exist_test": False
+    "last_message_date": {}
 }
 answer_bot = {
     'not_auth': 'Извините, сначала нужно зарегистрироваться!',
