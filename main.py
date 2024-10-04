@@ -290,12 +290,12 @@ async def info(message: Message) -> None:
 
         if user:
             await message.answer(
-                f'<b>Информация:</b>\n'
-                f'- Задавать вопросы о Python\n'
-                f'- Получать новые знания\n'
-                f'- Проходить тесты\n'
-                f'- Повышать рейтинг\n'
-                f'- Отслеживать статистику\n',
+                f'<b>Информация о боте:</b>\n'
+                f'- Задавай вопросы о Python\n'
+                f'- Получай новые знания\n'
+                f'- Проходи тесты\n'
+                f'- Повышай рейтинг\n'
+                f'- Отслеживай статистику\n',
                 reply_markup=get_home_kb())
         else:
             logging.info(f'Пользователь с id {user_id} не найден!')
@@ -329,7 +329,7 @@ async def clean_context(message: Message) -> None:
             user.context = json.dumps([])
             session.commit()
 
-            await message.answer(f'Все забыл, но решительно готов продолжить беседу!')
+            await message.answer(f'Все забыл, но готов продолжить беседу!')
         else:
             logging.info(f'Пользователь с id {user_id} не найден!')
 
