@@ -1,6 +1,6 @@
 import datetime as dt
 
-from sqlalchemy import Column, Integer, String, DateTime
+from sqlalchemy import Column, Integer, String, DateTime, BigInteger
 from db import Base
 
 
@@ -10,8 +10,8 @@ class UserModel(Base):
     """
     __tablename__ = 'users'
 
-    user_id = Column(Integer, primary_key=True, unique=True)
-    chat_id = Column(Integer, nullable=False)
+    user_id = Column(BigInteger, primary_key=True, unique=True)
+    chat_id = Column(BigInteger, nullable=False)
     username = Column(String, nullable=False)
     token_capacity = Column(Integer, default=1000)
     token_usage = Column(Integer, default=0)
@@ -20,6 +20,3 @@ class UserModel(Base):
     context_capacity = Column(Integer, default=10)
     context_length = Column(Integer, default=0)
     context = Column(String, default='[]')
-    context_test = Column(String, default='[]')
-    test_success = Column(Integer, default=0)
-    test_failure = Column(Integer, default=0)

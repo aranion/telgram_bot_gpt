@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy import Column, Integer, String, ForeignKey, BigInteger
 from db import Base
 from models.user import UserModel
 
@@ -10,6 +10,6 @@ class MessageModel(Base):
     __tablename__ = 'message'
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    user_id = Column(Integer, ForeignKey(UserModel.user_id))
+    user_id = Column(BigInteger, ForeignKey(UserModel.user_id))
     user_message = Column(String)
     assistant_message = Column(String)
