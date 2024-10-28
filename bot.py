@@ -116,6 +116,13 @@ async def image(message: Message, state: FSMContext):
         user = session.query(UserModel).filter_by(user_id=user_id).first()
 
         if user:
+            full_token_usage = user.token_usage
+            token_capacity = user.token_capacity
+
+            if full_token_usage > token_capacity:
+                return message.answer('У вас закончились токены! Для получения токенов выполните команду /tokens')
+            if cash['answer_not_completed'].get(user_id):
+                return message.answer(f'Ожидается завершение предыдущего запроса к боту...')
             await message.answer("Введите описание создаваемого изображения!", reply_markup=clear_state_kb())
             await state.set_state(States.image)
         else:
