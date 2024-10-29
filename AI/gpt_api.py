@@ -37,7 +37,7 @@ class GptAgent(AiApiTemplate):
 
             logging.info(f'Ответ GPT: {msg}')
 
-            length_context += + len(msg)
+            length_context += len(msg)
 
             return {'success': True, 'msg': str(msg), 'response': response, 'length_context': length_context}
         except Exception as e:

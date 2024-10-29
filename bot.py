@@ -26,7 +26,7 @@ from util import add_secs_to_datetime
 
 answer_bot = {
     'not_auth': 'Извините, сначала нужно зарегистрироваться!',
-    'error': 'Что-то пошло не так...',
+    'error': '⛔ Что-то пошло не так...',
     'not_connect': 'AI недоступен, повторите попытку позже...'
 }
 cash = {
@@ -38,8 +38,8 @@ image_router = Router()
 control_router = Router()
 
 add_desc_image_model = gpt_api.GptAgent(
-    "Describe the hero of the work: face, appearance, clothes, physique, age and character. "
-    "Describe the setting of the work. Years in which the action takes place.",
+    "Describe the hero of the work: face, clothes, physique, age and character, appearance and distinctive features of appearance."
+    "Describe the setting of the work. Years in which the action takes place. Original prompt:",
     '\nAdd additional fields to the passed json:\n'
     '{"desc_hero": "face, appearance, clothing, physique, age, character", "scene": "brief description of the scene"}'
 )
@@ -200,11 +200,11 @@ async def get_tokens(message: Message) -> None | SendMessage:
                         f'Слишком частое обновление токенов, подождите еще '
                         f'{int(-1 * delta.seconds / 60 // 1 * -1)} минутки!')
 
-            user.token_capacity += 500
+            user.token_capacity += 2000
             user.last_clear_token_date = current_time
             session.commit()
 
-            await message.answer(f'Так-то лучше. Теперь мы можем продолжить общаться!')
+            await message.answer(f'🤘 Так-то лучше. Теперь мы можем продолжить общаться!')
         else:
             logging.debug(f'Пользователь {user_id} не найден!')
 
@@ -277,7 +277,7 @@ async def regenerate(call: CallbackQuery, state: FSMContext):
     exist_user = session.query(UserModel).filter_by(user_id=user_id).first()
 
     if exist_user:
-        await call.message.answer('ТУТ НУЖНО ПЕРЕГЕНЕРИРОВАТЬ ИМЖ')
+        await call.message.answer('Функционал в разработке...')
     else:
         logging.debug(f'Пользователь {user_id} не найден!')
         await call.message.answer(answer_bot['not_auth'])
@@ -300,15 +300,15 @@ async def handle_main(message: Message):
 
         if full_token_usage > token_capacity:
             cash['answer_not_completed'][user_id] = False
-            return message.answer('У вас закончились токены! Для получения токенов выполните команду /tokens')
+            return message.answer('⛔ У вас закончились токены! Для получения токенов выполните команду /tokens')
 
         logging.debug(f'Проверка завершения предыдущего запроса: {cash["answer_not_completed"].get(user_id)}')
         if cash['answer_not_completed'].get(user_id):
-            return message.answer(f'Ваш запрос "{message_text}" не отправлен. Ожидается завершение предыдущего...')
+            return message.answer(f'⛔ Ваш запрос "{message_text}" не отправлен. Ожидается завершение предыдущего...')
         else:
             cash['answer_not_completed'][user_id] = True
 
-        temp_msg = await message.answer('Поиск автора и персонажа...')
+        temp_msg = await message.answer('🔍 Поиск автора и персонажа...')
 
         logging.debug('Проверка на наличие автора и героя произведения в сообщение')
         check_prompt_response = check_prompt_model.get_response(message_text, context=[])
@@ -322,9 +322,9 @@ async def handle_main(message: Message):
             raise 'Ошибка при поиске автора и героя произведения в сообщение'
         if check_prompt == 'NOT_FOUND':
             cash['answer_not_completed'][user_id] = False
-            return message.answer('В вашем сообщение не найден персонаж произведения или автор, попробуйте еще раз.')
+            return message.answer('🛑 В вашем сообщение не найден персонаж произведения или автор, попробуйте еще раз.')
 
-        temp_msg = await message.answer('Проверка автора и персонажа...')
+        temp_msg = await message.answer('👀 Проверка автора и персонажа...')
 
         logging.debug(f'Парсинг автора, персонажа и книги {check_prompt}')
         check_prompt_data = Parser(check_prompt).get_parsed_text()[0]
@@ -355,11 +355,11 @@ async def handle_main(message: Message):
 
         if is_author_not_create_hero:
             cash['answer_not_completed'][user_id] = False
-            return message.answer(f'Извините, не смог найти персонаж "{hero}" у автора "{author}".')
+            return message.answer(f'🛑 Извините, не смог найти персонаж "{hero}" у автора "{author}".')
         if is_author_create_hero:
-            await message.answer(f'Автор: \"{author}\"\nПроизведение: \"{book}\"\nПерсонаж: \"{hero}\"')
+            await message.answer(f'😎 Автор: \"{author}\"\n📕 Произведение: \"{book}\"\n👤 Персонаж: \"{hero}\"')
 
-        temp_msg = await message.answer('Собираю характеристики персонажа...')
+        temp_msg = await message.answer('📝 Собираю характеристики персонажа...')
 
         logging.debug(f'Добавление описание характера героя для иллюстрации')
         gpt_response = add_desc_image_model.get_response(check_prompt, context=[])
@@ -383,7 +383,7 @@ async def handle_main(message: Message):
 
         if "scene" in parsed_response:
             desc_image = str(parsed_response['desc_hero']) + str(parsed_response['scene'])
-            temp_msg = await message.answer('Формирую описание...')
+            temp_msg = await message.answer('⏳ Формирую описание...')
 
             logging.debug(f'Формирование описание картинки')
             gpt_response = improve_prompt_model.get_response(desc_image, context=[])
@@ -396,7 +396,7 @@ async def handle_main(message: Message):
             if not gpt_response['success']:
                 raise 'Ошибка при получении подробного описания изображения'
 
-            temp_msg = await message.answer('Начинаю рисовать...')
+            temp_msg = await message.answer('🎨 Начинаю рисовать...')
 
             try:
                 logging.debug(f'Создание изображения')
